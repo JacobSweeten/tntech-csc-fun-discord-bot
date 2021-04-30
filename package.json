@@ -1,0 +1,7 @@
+{
+	"name": "tntech-csc-fun-discord-bot",
+	"dependencies": {
+		"discord.js": "^12.5.3",
+		"ini": "^2.0.0"
+	}
+}
