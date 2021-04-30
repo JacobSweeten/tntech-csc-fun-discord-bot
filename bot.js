@@ -1,6 +1,8 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const ini = require('ini');
+const stringSimilarity = require('string-similarity')
+const md5 = require('md5');
 
 // Initialize logging
 if(!fs.existsSync("./logs"))
@@ -96,6 +98,38 @@ async function okBoomer(msgID, msg)
 
 }
 
+function eightBall(msg)
+{
+	var responses = [
+		"As I see it, yes.",
+		"Ask again later.",
+		"Better not tell you now.",
+		"Cannot predict now.",
+		"Concentrate and ask again.",
+		"Don’t count on it.",
+		"It is certain.",
+		"It is decidedly so.",
+		"Most likely.",
+		"My reply is no.",
+		"My sources say no.",
+		"Outlook not so good.",
+		"Outlook good.",
+		"Reply hazy, try again.",
+		"Signs point to yes.",
+		"Very doubtful.",
+		"Without a doubt.",
+		"Yes.",
+		"Yes – definitely.",
+		"You may rely on it."]
+
+		var hash = md5(msg.content);
+		var hashSlice = hash.substr(0, 2);
+		var val = parseInt(hashSlice, 16) / 256;
+		var resNum = Math.floor(val * responses.length);
+		var res = responses[resNum];
+		msg.reply(res);
+}
+
 const client = new Discord.Client();
 
 client.on("ready", () => {
@@ -110,6 +144,7 @@ client.on("message", (msg) => {
 	if(msg.author.id === "771905394142216202")
 		return;
 
+	// Parse commands
 	if(msg.content.startsWith("+"))
 	{
 		var msgArr = msg.content.split(" ");
@@ -121,13 +156,21 @@ client.on("message", (msg) => {
 		switch(command)
 		{
 			case "help":
-				msg.reply("```?okb to OK Boomer a message!\nMore commands to come!```");
+				msg.reply("```+okb to OK Boomer a message!\nMore commands to come!```");
 				break;
 			case "okb":
 				okBoomer(arg, msg)
 				break;
+			case "8ball":
+				eightBall(msg);
+				break;
 		}
 	}
+
+	// Detect other triggers
+	var similarity = stringSimilarity.compareTwoStrings(msg.content, "PHP is a good programming language");
+	if(similarity > 0.8)
+		msg.reply("False");
 });
 
 client.login(config.Discord.secret)
