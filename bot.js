@@ -3,6 +3,8 @@ const Discord = require('discord.js');
 const ini = require('ini');
 const stringSimilarity = require('string-similarity')
 const md5 = require('md5');
+const Filter = require('bad-words');
+const filter = new Filter();
 
 // Initialize logging
 if(!fs.existsSync("./logs"))
@@ -65,6 +67,22 @@ catch(err)
 }
 
 var config = ini.parse(configFile);
+
+// Initialize Swear Jar
+try
+{
+	var swearJar = parseInt(fs.readFileSync("./swearjar.txt"), "utf-8");
+}
+catch(err)
+{
+	fs.writeFileSync("./swearjar.txt", "0");
+}
+
+function swear()
+{
+	swearJar += 25;
+	fs.writeFileSync("./swearjar.txt", swearJar.toString());
+}
 
 // Initialize Discord
 
@@ -156,7 +174,7 @@ client.on("message", (msg) => {
 		switch(command)
 		{
 			case "help":
-				msg.reply("```+okb [message id] to OK Boomer a message!\n+8ball [question] to ask the Magic 8 Ball a question!\nMore commands to come!```");
+				msg.reply("```+okb [message id] to OK Boomer a message!\n+8ball [question] to ask the Magic 8 Ball a question!\n+sj to see how much is in the swear jar.\nMore commands to come!```");
 				break;
 			case "okb":
 				okBoomer(arg, msg)
@@ -164,13 +182,15 @@ client.on("message", (msg) => {
 			case "8ball":
 				eightBall(msg);
 				break;
+			case "sj":
+				msg.reply("There is $" + (swearJar / 100).toFixed(2) + " in the swear jar.");
 		}
 	}
 
 	// Detect other triggers
-	if(msg.content.includes("PHP"))
+	if(msg.content.toLowerCase().includes("php"))
 	{
-		var similarity = stringSimilarity.compareTwoStrings(msg.content, "PHP is a good programming language");
+		var similarity = stringSimilarity.compareTwoStrings(msg.content.toLowerCase(), "php is a good programming language");
 		if(similarity > 0.8)
 			msg.reply("False");
 	}
@@ -180,6 +200,9 @@ client.on("message", (msg) => {
 	{
 		msg.channel.send("I see all.");
 	}
+
+	if(filter.isProfane(msg.content))
+		swear();
 });
 
 client.login(config.Discord.secret)
