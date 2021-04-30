@@ -196,7 +196,7 @@ client.on("message", (msg) => {
 			msg.reply("False");
 	}
 
-	var doCreepy = Math.floor(Math.random() * 1000) === 0;
+	var doCreepy = Math.floor(Math.random() * 10000) === 0;
 	if(doCreepy)
 	{
 		msg.channel.send("I see all.");
