@@ -141,7 +141,7 @@ client.on("ready", () => {
 
 client.on("message", (msg) => {
 	// Do not reply to self
-	if(msg.author.id === "771905394142216202")
+	if(msg.author.id === client.user.id)
 		return;
 
 	// Parse commands
