@@ -120,7 +120,7 @@ function eightBall(msg)
 		"Without a doubt.",
 		"Yes.",
 		"Yes – definitely.",
-		"You may rely on it."]
+		"You may rely on it."];
 
 		var hash = md5(msg.content);
 		var hashSlice = hash.substr(0, 2);
@@ -156,7 +156,7 @@ client.on("message", (msg) => {
 		switch(command)
 		{
 			case "help":
-				msg.reply("```+okb to OK Boomer a message!\nMore commands to come!```");
+				msg.reply("```+okb [message id] to OK Boomer a message!\n+8ball [question] to ask the Magic 8 Ball a question!\nMore commands to come!```");
 				break;
 			case "okb":
 				okBoomer(arg, msg)
@@ -168,9 +168,18 @@ client.on("message", (msg) => {
 	}
 
 	// Detect other triggers
-	var similarity = stringSimilarity.compareTwoStrings(msg.content, "PHP is a good programming language");
-	if(similarity > 0.8)
-		msg.reply("False");
+	if(msg.content.includes("PHP"))
+	{
+		var similarity = stringSimilarity.compareTwoStrings(msg.content, "PHP is a good programming language");
+		if(similarity > 0.8)
+			msg.reply("False");
+	}
+
+	var doCreepy = Math.floor(Math.random() * 1000) === 0;
+	if(doCreepy)
+	{
+		msg.channel.send("I see all.");
+	}
 });
 
 client.login(config.Discord.secret)
