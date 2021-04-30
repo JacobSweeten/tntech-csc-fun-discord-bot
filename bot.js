@@ -68,10 +68,11 @@ catch(err)
 
 var config = ini.parse(configFile);
 
-// Initialize Swear Jar
+// Initialize Swear Jar\
+var swearJar = 0;
 try
 {
-	var swearJar = parseInt(fs.readFileSync("./swearjar.txt"), "utf-8");
+	swearJar = parseInt(fs.readFileSync("./swearjar.txt"), "utf-8");
 }
 catch(err)
 {
@@ -202,7 +203,10 @@ client.on("message", (msg) => {
 	}
 
 	if(filter.isProfane(msg.content))
+	{
+		log("User \"" + msg.author.username + "\" said a bad word! The swear jar will be updated.");
 		swear();
+	}
 });
 
 client.login(config.Discord.secret)
