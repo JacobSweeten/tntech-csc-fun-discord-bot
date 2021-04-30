@@ -21,6 +21,7 @@ function log(message, level = "INFO")
 	catch(err)
 	{
 		console.error("Unable to write log. Please ensure I have the appropriate permissions.");
+		process.exit(1);
 	}
 }
 
@@ -58,6 +59,8 @@ catch(err)
 
 var config = ini.parse(configFile);
 
+// Initialize Discord
+
 if(config.Discord === undefined)
 {
 	console.error("No [Discord] header found in config file. Exiting.");
@@ -70,12 +73,21 @@ if(config.Discord.secret === undefined)
 	process.exit(1);
 }
 
-
-// Initialize Discord
 const client = new Discord.Client();
 
 client.on("ready", () => {
-	console.log("Hello!");
+	console.log("Connected.");
+	
+	client.user.setActivity("?help");
+	setInterval(()=>{client.user.setActivity("?help");}, 3600000);
+});
+
+client.on("message", (msg) => {
+	// Do not reply to self
+	if(msg.author.id === "771905394142216202")
+		return;
+
+	
 });
 
 client.login(config.Discord.secret)
