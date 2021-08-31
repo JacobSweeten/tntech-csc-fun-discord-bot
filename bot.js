@@ -114,7 +114,21 @@ async function okBoomer(msgID, msg)
 	await targetMsg.react("🇲");
 	await targetMsg.react("🇪");
 	await targetMsg.react("🇷");
+}
 
+async function based(msgID, msg)
+{
+	var targetMsg = await msg.channel.messages.fetch(msgID);
+	if(targetMsg === undefined)
+	{
+		msg.reply("That is an invalid message ID or it is not in this channel.");
+	}
+
+	await targetMsg.react("🅱️");
+	await targetMsg.react("🇦");
+	await targetMsg.react("🇸");
+	await targetMsg.react("🇪");
+	await targetMsg.react("🇩");
 }
 
 function eightBall(msg)
@@ -184,6 +198,9 @@ client.on("messageCreate", msg => {
 			case "okb":
 				okBoomer(arg, msg)
 				break;
+			case "based":
+				based(arg, msg)
+				break;
 			case "8ball":
 				eightBall(msg);
 				break;
@@ -213,4 +230,4 @@ client.on("messageCreate", msg => {
 	}
 });
 
-client.login(config.Discord.secret)
+client.login(config.Discord.secret);
