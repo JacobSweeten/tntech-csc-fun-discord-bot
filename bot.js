@@ -193,7 +193,7 @@ client.on("messageCreate", msg => {
 		switch(command)
 		{
 			case "help":
-				msg.reply("```+okb [message id] to OK Boomer a message!\n+8ball [question] to ask the Magic 8 Ball a question!\n+sj to see how much is in the swear jar.\nMore commands to come!```");
+				msg.reply("```+okb [message id] to OK Boomer a message!\n+8ball [question] to ask the Magic 8 Ball a question!\n+sj to see how much is in the swear jar.\n+based [message id] to BASED a message!\nMore commands to come!```");
 				break;
 			case "okb":
 				okBoomer(arg, msg)
