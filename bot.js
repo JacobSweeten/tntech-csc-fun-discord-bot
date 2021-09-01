@@ -101,10 +101,14 @@ if(config.Discord.secret === undefined)
 
 async function okBoomer(msgID, msg)
 {
-	var targetMsg = await msg.channel.messages.fetch(msgID);
-	if(targetMsg === undefined)
+	try
+	{
+		var targetMsg = await msg.channel.messages.fetch(msgID);
+	}
+	catch(e)
 	{
 		msg.reply("That is an invalid message ID or it is not in this channel.");
+		return;
 	}
 
 	await targetMsg.react("🆗");
@@ -117,11 +121,15 @@ async function okBoomer(msgID, msg)
 }
 
 async function based(msgID, msg)
-{
-	var targetMsg = await msg.channel.messages.fetch(msgID);
-	if(targetMsg === undefined)
+{	
+	try
+	{
+		var targetMsg = await msg.channel.messages.fetch(msgID);
+	}
+	catch(e)
 	{
 		msg.reply("That is an invalid message ID or it is not in this channel.");
+		return;
 	}
 
 	await targetMsg.react("🅱️");
