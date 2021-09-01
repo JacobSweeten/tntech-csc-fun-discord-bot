@@ -61,7 +61,7 @@ catch(err)
 	}
 	catch(err)
 	{
-		error("Unable to read or write config file. Please ensure I have the appropriat permissions.");
+		error("Unable to read or write config file. Please ensure I have the appropriate permissions.");
 		process.exit(1);
 	}
 }
