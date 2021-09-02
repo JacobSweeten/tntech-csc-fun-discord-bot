@@ -236,6 +236,11 @@ client.on("messageCreate", msg => {
 		log("User \"" + msg.author.username + "\" said a bad word! The swear jar will be updated.");
 		swear();
 	}
+
+	if(msg.content.toLowerCase().includes(" based "))
+	{
+		based(msg.id, msg);
+	}
 });
 
 client.login(config.Discord.secret);
