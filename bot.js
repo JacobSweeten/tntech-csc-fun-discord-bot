@@ -99,6 +99,64 @@ if(config.Discord.secret === undefined)
 	process.exit(1);
 }
 
+async function roll(msg, diceString)
+{
+	if(/^[1-9][0-9]?(d|D)(4|6|8|10|12|20)(\s*(\+|-)\s*[1-9][0-9]?)?$/.test(diceString))
+	{
+		var arr1 = diceString.replaceAll("\s", "").split(/D|d/);
+		var diceCount = Number(arr1[0]);
+		var die;
+		var modifier = 0
+		var op = "+"
+
+		if(/.*(\+|-).*/.test(diceString))
+		{
+			var arr2 = arr1[1].split(/\+|-/);
+			die = Number(arr2[0]);
+			modifier = Number(arr2[1]);
+			op = diceString.includes("+") ? "+" : "-";
+		}
+		else
+		{
+			die = Number(arr1[1]);
+		}
+
+		var resArr = [];
+		var tot = 0;
+
+		for(var i = 0; i < diceCount; i++)
+		{
+			var res = Math.floor(Math.random() * die + 1);
+			resArr.push(res);
+			tot += res;
+		}
+		
+		if(op == "+")
+		{
+			tot += modifier;
+		}
+		else
+		{
+			tot -= modifier;
+		}
+
+		var outString = "(";
+		
+		for(var i = 0; i < diceCount - 1; i++)
+		{
+			outString += resArr[i].toString() + ", ";
+		}
+
+		outString += resArr[diceCount.toString() - 1] + ") " + op + " " + modifier.toString();
+		outString += "\n\nTotal: " + tot.toString();
+		msg.reply(outString);
+	}
+	else
+	{
+		msg.reply("Invalid dice string. Use format +roll [number]d[die] +/- modifier. Example: +roll 5d20 + 6");
+	}
+}
+
 async function okBoomer(msgID, msg)
 {
 	try
@@ -214,6 +272,10 @@ client.on("messageCreate", msg => {
 				break;
 			case "sj":
 				msg.reply("There is $" + (swearJar / 100).toFixed(2) + " in the swear jar.");
+				break;
+			case "roll":
+				roll(msg, arg);
+				break;
 		}
 	}
 
