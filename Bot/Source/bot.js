@@ -1,9 +1,10 @@
 const fs = require('fs');
-const {Client, Intents} = require('discord.js');
-const ini = require('ini');
+const {REST, Routes, Client, GatewayIntentBits} = require('discord.js');
 const stringSimilarity = require('string-similarity')
-const md5 = require('md5');
 const Filter = require('bad-words');
+
+const BotCommands = require("./BotCommands");
+
 const filter = new Filter();
 
 // Initialize logging
@@ -49,26 +50,25 @@ var configFile;
 
 try
 {
-	configFile = fs.readFileSync("./config.ini", "utf-8");
+	configFile = fs.readFileSync("./config.json", "utf-8");
 }
 catch(err)
 {
 	try
 	{
-		fs.writeFileSync("./config.ini", "[Discord]\nsecret=SECRET HERE");
-		log("No config file found. Created blank config file for you. Please modify the config file and restart.");
+		log("No config file found.");
 		process.exit(1);
 	}
 	catch(err)
 	{
-		error("Unable to read or write config file. Please ensure I have the appropriate permissions.");
+		error("Unable to read config file. Please ensure I have the appropriate permissions.");
 		process.exit(1);
 	}
 }
 
-var config = ini.parse(configFile);
+var config = JSON.parse(configFile);
 
-// Initialize Swear Jar\
+// Initialize Swear Jar
 var swearJar = 0;
 try
 {
@@ -85,11 +85,73 @@ function swear()
 	fs.writeFileSync("./swearjar.txt", swearJar.toString());
 }
 
-// Initialize Discord
+// Initialize Discord Commands
+const commands = [
+	{
+		name: "boris",
+		description: "Display Boris' commands"
+	},
+	{
+		name: "okb",
+		description: "OK Boomer a message",
+		options: [
+			{
+				name: "messageid",
+				description: "The message ID you wish to OK Boomer",
+				type: 3,
+				required: true
+			}
+		]
+	},
+	{
+		name: "8ball",
+		description: "Ask the magic 8 ball a question",
+		options: [
+			{
+				name: "question",
+				description: "Your question",
+				type: 3,
+				required: true
+			}
+		]
+	},
+	{
+		name: "based",
+		description: "React to a message with based",
+		options: [
+			{
+				name: "messageid",
+				description: "The message ID you wish to BASED",
+				type: 3,
+				required: true
+			}
+		]
+	},
+	{
+		name: "sj",
+		description: "Check the swear jar balance"
+	}
+]
+
+const rest = new REST({version: "10"}).setToken(config.Discord.secret);
+
+(async () => {
+	try
+	{
+		await rest.put(Routes.applicationCommands(config.Discord.clientID), {body: commands});
+	}
+	catch(e)
+	{
+		error(e);
+		process.exit(1);
+	}
+})();
+
+// Initialize Discord Client
 
 if(config.Discord === undefined)
 {
-	error("No [Discord] header found in config file. Exiting.");
+	error("No Discord object found in config file. Exiting.");
 	process.exit(1);
 }
 
@@ -99,82 +161,11 @@ if(config.Discord.secret === undefined)
 	process.exit(1);
 }
 
-async function okBoomer(msgID, msg)
-{
-	try
-	{
-		var targetMsg = await msg.channel.messages.fetch(msgID);
-	}
-	catch(e)
-	{
-		msg.reply("That is an invalid message ID or it is not in this channel.");
-		return;
-	}
-
-	await targetMsg.react("🆗");
-	await targetMsg.react("🅱️");
-	await targetMsg.react("🇴");
-	await targetMsg.react("🅾️");
-	await targetMsg.react("🇲");
-	await targetMsg.react("🇪");
-	await targetMsg.react("🇷");
-}
-
-async function based(msgID, msg)
-{	
-	try
-	{
-		var targetMsg = await msg.channel.messages.fetch(msgID);
-	}
-	catch(e)
-	{
-		msg.reply("That is an invalid message ID or it is not in this channel.");
-		return;
-	}
-
-	await targetMsg.react("🅱️");
-	await targetMsg.react("🇦");
-	await targetMsg.react("🇸");
-	await targetMsg.react("🇪");
-	await targetMsg.react("🇩");
-}
-
-function eightBall(msg)
-{
-	var responses = [
-		"As I see it, yes.",
-		"Ask again later.",
-		"Better not tell you now.",
-		"Cannot predict now.",
-		"Concentrate and ask again.",
-		"Don’t count on it.",
-		"It is certain.",
-		"It is decidedly so.",
-		"Most likely.",
-		"My reply is no.",
-		"My sources say no.",
-		"Outlook not so good.",
-		"Outlook good.",
-		"Reply hazy, try again.",
-		"Signs point to yes.",
-		"Very doubtful.",
-		"Without a doubt.",
-		"Yes.",
-		"Yes – definitely.",
-		"You may rely on it."];
-
-	var hash = md5(msg.content);
-	var hashSlice = hash.substr(0, 2);
-	var val = parseInt(hashSlice, 16) / 256;
-	var resNum = Math.floor(val * responses.length);
-	var res = responses[resNum];
-	msg.reply(res);
-}
-
 const client = new Client({intents: [
-	Intents.FLAGS.GUILDS,
-	Intents.FLAGS.GUILD_MESSAGES,
-	Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+	GatewayIntentBits.Guilds,
+	GatewayIntentBits.GuildMessages,
+	GatewayIntentBits.MessageContent,
+	GatewayIntentBits.GuildMessageReactions
 ]});
 
 client.on("ready", () => {
@@ -182,6 +173,15 @@ client.on("ready", () => {
 
 	client.user.setActivity("+help");
 	setInterval(()=>{client.user.setActivity("+help");}, 3600000);
+});
+
+client.on("interactionCreate", (interaction) => {
+	if(!interaction.isChatInputCommand()) return;
+
+	if(interaction.commandName == "8ball")
+	{
+		BotCommands.eightBall(interaction);
+	}
 });
 
 client.on("messageCreate", msg => {
@@ -204,13 +204,13 @@ client.on("messageCreate", msg => {
 				msg.reply("```+okb [message id] to OK Boomer a message!\n+8ball [question] to ask the Magic 8 Ball a question!\n+sj to see how much is in the swear jar.\n+based [message id] to BASED a message!\nMore commands to come!```");
 				break;
 			case "okb":
-				okBoomer(arg, msg)
+				BotCommands.okBoomer(arg, msg)
 				break;
 			case "based":
-				based(arg, msg)
+				BotCommands.based(arg, msg)
 				break;
 			case "8ball":
-				eightBall(msg);
+				BotCommands.eightBall(msg);
 				break;
 			case "sj":
 				msg.reply("There is $" + (swearJar / 100).toFixed(2) + " in the swear jar.");

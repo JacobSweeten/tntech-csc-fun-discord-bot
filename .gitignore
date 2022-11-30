@@ -1,5 +1,1 @@
-logs/*
-config.ini
-package-lock.json
-node_modules/*
-swearjar.txt
+Bot/Source/config.json
