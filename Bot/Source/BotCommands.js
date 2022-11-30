@@ -1,5 +1,7 @@
 const md5 = require("md5")
 
+const SwearJar = require("./SwearJar");
+
 class BotCommands
 {
 	static responses = [
@@ -24,17 +26,21 @@ class BotCommands
 		"Yes – definitely.",
 		"You may rely on it."];
 	
-	static async okBoomer(msgID, msg)
+	static async okBoomer(interaction)
 	{
+		var msgID = interaction.options.get("messageid", true).value;
+
 		try
 		{
-			var targetMsg = await msg.channel.messages.fetch(msgID);
+			var targetMsg = await interaction.channel.messages.fetch(msgID);
 		}
 		catch(e)
 		{
 			msg.reply("That is an invalid message ID or it is not in this channel.");
 			return;
 		}
+
+		await interaction.deferReply({ephemeral: true});
 
 		await targetMsg.react("🆗");
 		await targetMsg.react("🅱️");
@@ -43,13 +49,17 @@ class BotCommands
 		await targetMsg.react("🇲");
 		await targetMsg.react("🇪");
 		await targetMsg.react("🇷");
+
+		interaction.editReply({content: "Done", ephemeral: true});
 	}
 
-	static async based(msgID, msg)
-	{	
+	static async based(interaction)
+	{
+		var msgID = interaction.options.get("messageid", true).value;
+
 		try
 		{
-			var targetMsg = await msg.channel.messages.fetch(msgID);
+			var targetMsg = await interaction.channel.messages.fetch(msgID);
 		}
 		catch(e)
 		{
@@ -57,11 +67,15 @@ class BotCommands
 			return;
 		}
 
+		await interaction.deferReply({ephemeral: true});
+
 		await targetMsg.react("🅱️");
 		await targetMsg.react("🇦");
 		await targetMsg.react("🇸");
 		await targetMsg.react("🇪");
 		await targetMsg.react("🇩");
+
+		interaction.editReply({content: "Done", ephemeral: true});
 	}
 
 	static eightBall(interaction)
@@ -74,6 +88,11 @@ class BotCommands
 		var resNum = Math.floor(val * this.responses.length);
 		var res = this.responses[resNum];
 		interaction.reply("Query: " + msg + "\n\nReply: " + res);
+	}
+
+	static swearJar(interaction)
+	{
+		interaction.reply("There is $" + (SwearJar.getValue() / 100).toFixed(2) + " in the swear jar.");
 	}
 };
 

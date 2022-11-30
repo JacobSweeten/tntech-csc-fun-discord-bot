@@ -4,6 +4,7 @@ const stringSimilarity = require('string-similarity')
 const Filter = require('bad-words');
 
 const BotCommands = require("./BotCommands");
+const SwearJar = require("./SwearJar");
 
 const filter = new Filter();
 
@@ -69,28 +70,10 @@ catch(err)
 var config = JSON.parse(configFile);
 
 // Initialize Swear Jar
-var swearJar = 0;
-try
-{
-	swearJar = parseInt(fs.readFileSync("./swearjar.txt"), "utf-8");
-}
-catch(err)
-{
-	fs.writeFileSync("./swearjar.txt", "0");
-}
-
-function swear()
-{
-	swearJar += 25;
-	fs.writeFileSync("./swearjar.txt", swearJar.toString());
-}
+SwearJar.init();
 
 // Initialize Discord Commands
 const commands = [
-	{
-		name: "boris",
-		description: "Display Boris' commands"
-	},
 	{
 		name: "okb",
 		description: "OK Boomer a message",
@@ -182,6 +165,18 @@ client.on("interactionCreate", (interaction) => {
 	{
 		BotCommands.eightBall(interaction);
 	}
+	else if(interaction.commandName == "okb")
+	{
+		BotCommands.okBoomer(interaction);
+	}
+	else if(interaction.commandName == "based")
+	{
+		BotCommands.based(interaction);
+	}
+	else if(interaction.commandName == "sj")
+	{
+		BotCommands.swearJar(interaction);
+	}
 });
 
 client.on("messageCreate", msg => {
@@ -189,35 +184,7 @@ client.on("messageCreate", msg => {
 	if(msg.author.id === client.user.id)
 		return;
 
-	// Parse commands
-	if(msg.content.startsWith("+"))
-	{
-		var msgArr = msg.content.split(" ");
-		var command = msgArr[0].substring(1);
-		var arg = msgArr.splice(1).join(" ");
-
-		log("Command from user \"" + msg.author.username + "\": \"" + command + "\" Argument: \"" + arg + "\"");
-
-		switch(command)
-		{
-			case "help":
-				msg.reply("```+okb [message id] to OK Boomer a message!\n+8ball [question] to ask the Magic 8 Ball a question!\n+sj to see how much is in the swear jar.\n+based [message id] to BASED a message!\nMore commands to come!```");
-				break;
-			case "okb":
-				BotCommands.okBoomer(arg, msg)
-				break;
-			case "based":
-				BotCommands.based(arg, msg)
-				break;
-			case "8ball":
-				BotCommands.eightBall(msg);
-				break;
-			case "sj":
-				msg.reply("There is $" + (swearJar / 100).toFixed(2) + " in the swear jar.");
-		}
-	}
-
-	// Detect other triggers
+	// Detect triggers
 	if(msg.content.toLowerCase().includes("php"))
 	{
 		var similarity = stringSimilarity.compareTwoStrings(msg.content.toLowerCase(), "php is a good programming language");
@@ -234,7 +201,7 @@ client.on("messageCreate", msg => {
 	if(filter.isProfane(msg.content))
 	{
 		log("User \"" + msg.author.username + "\" said a bad word! The swear jar will be updated.");
-		swear();
+		SwearJar.addSwear();
 	}
 });
 
